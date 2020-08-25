@@ -1,10 +1,9 @@
 import ast
-import json
 import shlex
+from parser import SetupVisitor
 from pathlib import Path
 
-from constants import CLASSIFIERS_LIST, SETUP_KEYWORD_ARGUMENTS
-from utils import sort_dict_keys_based_on_list
+from constants import CLASSIFIERS_LIST
 
 
 def remove_empty_strings(lst):
@@ -39,61 +38,6 @@ def join_classifiers_data(lst):
     return f"classifiers=[{classifiers_str},\n{end_whitespaces}]"
 
 
-BINOPS = dict(Add="+")
-
-
-def unparse_name(value):
-    return value.id
-
-
-def unparse_call(value):
-    fn_name = value.func.id
-    args = ", ".join([UNPARSERS[arg.__class__.__name__](arg) for arg in value.args])
-
-    return f"{fn_name}({args})"
-
-
-def unparse_binop(value):
-    left = UNPARSERS[value.left.__class__.__name__](value.left)
-    op = f" {BINOPS[value.op.__class__.__name__]} "
-    right = UNPARSERS[value.right.__class__.__name__](value.right)
-
-    return f"{left}{op}{right}"
-
-
-def unparse_literal(value):
-    return repr(ast.literal_eval(value))
-
-
-UNPARSERS = dict(
-    Name=unparse_name,
-    Call=unparse_call,
-    BinOp=unparse_binop,
-    Str=unparse_literal,
-    List=unparse_literal,
-    NameConstant=unparse_literal,
-    Dict=unparse_literal,
-)
-
-
-class SetupVisitor(ast.NodeVisitor):
-    def __init__(self):
-        self.arguments = []
-
-    def visit_Call(self, node):
-        if hasattr(node.func, "id") and node.func.id == "setup":
-            self.arguments.append(
-                {
-                    kw.arg: UNPARSERS[kw.value.__class__.__name__](kw.value)
-                    for kw in node.keywords
-                }
-            )
-        self.generic_visit(node)
-
-    def report(self):
-        print(json.dumps(self.arguments, indent=4))
-
-
 def main(file_path):
     try:
         path = Path(file_path)
@@ -109,13 +53,7 @@ def main(file_path):
         root = ast.parse(data)
         setup_call = SetupVisitor()
         setup_call.visit(root)
-        # setup_call.report()
-
-        print(
-            sort_dict_keys_based_on_list(
-                setup_call.arguments[0], SETUP_KEYWORD_ARGUMENTS
-            )
-        )
+        setup_call.report()
 
         # path.write_text(updated_data)
 

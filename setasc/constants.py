@@ -4,6 +4,8 @@ CLASSIFIERS = re.compile(r"classifiers=\[[^\]]*\]", re.DOTALL)
 CLASSIFIERS_LIST = re.compile(r"classifiers=\[([^\]]*)\]", re.DOTALL)
 SETUP = re.compile(r"setup\(.*\)", re.DOTALL)
 
+BINOPS = dict(Add="+")
+
 SETUP_KEYWORD_ARGUMENTS = [
     "name",
     "version",
