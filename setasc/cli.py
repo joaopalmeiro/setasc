@@ -1,12 +1,10 @@
 import ast
 import json
-import re
 import shlex
 from pathlib import Path
 
-CLASSIFIERS = re.compile(r"classifiers=\[[^\]]*\]", re.DOTALL)
-CLASSIFIERS_LIST = re.compile(r"classifiers=\[([^\]]*)\]", re.DOTALL)
-SETUP = re.compile(r"setup\(.*\)", re.DOTALL)
+from constants import CLASSIFIERS_LIST, SETUP_KEYWORD_ARGUMENTS
+from utils import sort_dict_keys_based_on_list
 
 
 def remove_empty_strings(lst):
@@ -109,9 +107,15 @@ def main(file_path):
         # updated_data = CLASSIFIERS.sub(classifiers_data, data)
 
         root = ast.parse(data)
-        setup = SetupVisitor()
-        setup.visit(root)
-        setup.report()
+        setup_call = SetupVisitor()
+        setup_call.visit(root)
+        # setup_call.report()
+
+        print(
+            sort_dict_keys_based_on_list(
+                setup_call.arguments[0], SETUP_KEYWORD_ARGUMENTS
+            )
+        )
 
         # path.write_text(updated_data)
 
