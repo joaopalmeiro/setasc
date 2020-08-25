@@ -127,5 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Development files
 setup copy.py
 setup1.py

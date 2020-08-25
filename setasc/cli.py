@@ -1,13 +1,37 @@
+"""
+Sort the keyword arguments of the `setup()` function of your `setup.py` file.
+"""
+
+import argparse
 import ast
-from parser import SetupVisitor
 from pathlib import Path
 
-from constants import SETUP
-from utils import (
+from .constants import SETUP
+from .parser import SetupVisitor
+from .utils import (
     convert_dict_to_single_str,
     convert_list_to_single_str,
     sort_quoted_list,
 )
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser._action_groups.pop()
+    required = parser.add_argument_group("Required arguments")
+    # optional = parser.add_argument_group("Optional arguments")
+
+    required.add_argument(
+        "-i",
+        "--input",
+        required=True,
+        help="The path to the `setup.py` file to be sorted.",
+    )
+
+    args = parser.parse_args()
+
+    return args
 
 
 def join_setup_arguments(dct):
@@ -29,14 +53,16 @@ def sort_classifiers(string):
     return convert_list_to_single_str(sorted_classifers_list)
 
 
-def main(file_path):
+def main():
+    args = parse_args()
+
     try:
-        path = Path(file_path)
+        path = Path(args.input)
         data = path.read_text(encoding="utf-8")
     except FileNotFoundError:
-        print(f"🚫 File {repr(file_path)} not found.")
+        print(f"🚫 File {repr(args.input)} not found.")
     except IsADirectoryError:
-        print(f"🚫 {repr(file_path)} is a directory, not a file.")
+        print(f"🚫 {repr(args.input)} is a directory, not a file.")
     else:
         root = ast.parse(data)
         setup_call = SetupVisitor()
@@ -54,4 +80,4 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    main("setup1.py")
+    main()

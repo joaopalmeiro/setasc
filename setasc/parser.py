@@ -1,9 +1,9 @@
 import ast
 import json
 
-from constants import SETUP_KEYWORD_ARGUMENTS
-from unparser import UNPARSERS
-from utils import sort_dict_based_on_list
+from .constants import SETUP_KEYWORD_ARGUMENTS
+from .unparser import UNPARSERS
+from .utils import get_class_name, sort_dict_based_on_list
 
 
 class SetupVisitor(ast.NodeVisitor):
@@ -15,7 +15,7 @@ class SetupVisitor(ast.NodeVisitor):
             self.arguments.append(
                 sort_dict_based_on_list(
                     {
-                        kw.arg: UNPARSERS[kw.value.__class__.__name__](kw.value)
+                        kw.arg: UNPARSERS[get_class_name(kw.value)](kw.value)
                         for kw in node.keywords
                     },
                     SETUP_KEYWORD_ARGUMENTS,

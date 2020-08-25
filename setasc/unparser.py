@@ -1,7 +1,7 @@
 import ast
 
-from constants import BINOPS
-from utils import get_class_name
+from .constants import BINOPS
+from .utils import get_class_name
 
 
 def unparse_name(value):
