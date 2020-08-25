@@ -1,9 +1,12 @@
+import ast
+import json
 import re
 import shlex
 from pathlib import Path
 
 CLASSIFIERS = re.compile(r"classifiers=\[[^\]]*\]", re.DOTALL)
 CLASSIFIERS_LIST = re.compile(r"classifiers=\[([^\]]*)\]", re.DOTALL)
+SETUP = re.compile(r"setup\(.*\)", re.DOTALL)
 
 
 def remove_empty_strings(lst):
@@ -38,6 +41,61 @@ def join_classifiers_data(lst):
     return f"classifiers=[{classifiers_str},\n{end_whitespaces}]"
 
 
+BINOPS = dict(Add="+")
+
+
+def unparse_name(value):
+    return value.id
+
+
+def unparse_call(value):
+    fn_name = value.func.id
+    args = ", ".join([UNPARSERS[arg.__class__.__name__](arg) for arg in value.args])
+
+    return f"{fn_name}({args})"
+
+
+def unparse_binop(value):
+    left = UNPARSERS[value.left.__class__.__name__](value.left)
+    op = f" {BINOPS[value.op.__class__.__name__]} "
+    right = UNPARSERS[value.right.__class__.__name__](value.right)
+
+    return f"{left}{op}{right}"
+
+
+def unparse_literal(value):
+    return repr(ast.literal_eval(value))
+
+
+UNPARSERS = dict(
+    Name=unparse_name,
+    Call=unparse_call,
+    BinOp=unparse_binop,
+    Str=unparse_literal,
+    List=unparse_literal,
+    NameConstant=unparse_literal,
+    Dict=unparse_literal,
+)
+
+
+class SetupVisitor(ast.NodeVisitor):
+    def __init__(self):
+        self.arguments = []
+
+    def visit_Call(self, node):
+        if hasattr(node.func, "id") and node.func.id == "setup":
+            self.arguments.append(
+                {
+                    kw.arg: UNPARSERS[kw.value.__class__.__name__](kw.value)
+                    for kw in node.keywords
+                }
+            )
+        self.generic_visit(node)
+
+    def report(self):
+        print(json.dumps(self.arguments, indent=4))
+
+
 def main(file_path):
     try:
         path = Path(file_path)
@@ -47,10 +105,16 @@ def main(file_path):
     except IsADirectoryError:
         print(f"🚫 {repr(file_path)} is a directory, not a file.")
     else:
-        classifiers_data = join_classifiers_data(get_classifiers_data(data))
-        updated_data = CLASSIFIERS.sub(classifiers_data, data)
-        path.write_text(updated_data)
+        # classifiers_data = join_classifiers_data(get_classifiers_data(data))
+        # updated_data = CLASSIFIERS.sub(classifiers_data, data)
+
+        root = ast.parse(data)
+        setup = SetupVisitor()
+        setup.visit(root)
+        setup.report()
+
+        # path.write_text(updated_data)
 
 
 if __name__ == "__main__":
-    main("setup.py")
+    main("setup1.py")
