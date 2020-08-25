@@ -1,6 +1,7 @@
 import ast
 
 from constants import BINOPS
+from utils import get_class_name
 
 
 def unparse_name(value):
@@ -9,15 +10,15 @@ def unparse_name(value):
 
 def unparse_call(value):
     fn_name = value.func.id
-    args = ", ".join([UNPARSERS[arg.__class__.__name__](arg) for arg in value.args])
+    args = ", ".join([UNPARSERS[get_class_name(arg)](arg) for arg in value.args])
 
     return f"{fn_name}({args})"
 
 
 def unparse_binop(value):
-    left = UNPARSERS[value.left.__class__.__name__](value.left)
-    op = f" {BINOPS[value.op.__class__.__name__]} "
-    right = UNPARSERS[value.right.__class__.__name__](value.right)
+    left = UNPARSERS[get_class_name(value.left)](value.left)
+    op = f" {BINOPS[get_class_name(value.op)]} "
+    right = UNPARSERS[get_class_name(value.right)](value.right)
 
     return f"{left}{op}{right}"
 

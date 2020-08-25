@@ -3,7 +3,8 @@ import shlex
 from parser import SetupVisitor
 from pathlib import Path
 
-from constants import CLASSIFIERS_LIST
+from constants import CLASSIFIERS_LIST, SETUP
+from utils import convert_dict_to_single_str
 
 
 def remove_empty_strings(lst):
@@ -38,6 +39,17 @@ def join_classifiers_data(lst):
     return f"classifiers=[{classifiers_str},\n{end_whitespaces}]"
 
 
+def join_setup_arguments(dct):
+    sorted_setup_arguments = convert_dict_to_single_str(dct)
+
+    if r"\n" in sorted_setup_arguments:
+        return f"setup({sorted_setup_arguments})".encode("unicode_escape").decode(
+            "utf-8"
+        )
+    else:
+        return f"setup({sorted_setup_arguments})"
+
+
 def main(file_path):
     try:
         path = Path(file_path)
@@ -53,7 +65,11 @@ def main(file_path):
         root = ast.parse(data)
         setup_call = SetupVisitor()
         setup_call.visit(root)
-        setup_call.report()
+
+        sorted_setup_arguments = join_setup_arguments(setup_call.arguments[0])
+        updated_data = SETUP.sub(sorted_setup_arguments, data)
+
+        print(updated_data)
 
         # path.write_text(updated_data)
 
