@@ -6,6 +6,8 @@ import argparse
 import ast
 from pathlib import Path
 
+import black
+
 from .constants import SETUP
 from .parser import SetupVisitor
 from .utils import (
@@ -80,8 +82,12 @@ def main():
         sorted_setup_arguments = join_setup_arguments(setup_call.arguments[0])
         updated_data = SETUP.sub(sorted_setup_arguments, data)
 
-        print(updated_data)
-        # path.write_text(updated_data)
+        updated_and_formatted_data = black.format_str(
+            updated_data,
+            mode=black.FileMode(target_versions={black.TargetVersion.PY36}),
+        )
+
+        path.write_text(updated_and_formatted_data)
 
 
 if __name__ == "__main__":

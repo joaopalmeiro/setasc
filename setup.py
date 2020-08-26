@@ -45,8 +45,9 @@ setup(
     ],
     license="MIT",
     keywords="cli, refactor, sort, clean, setup, setuptools",
-    install_requires=[],
+    install_requires=["black"],
     entry_points={"console_scripts": ["setasc=setasc.cli:main"]},
+    python_requires=">=3.6, <=3.8",
     project_urls={
         "Bug Reports": "https://github.com/joaopalmeiro/setasc/issues",
         "Source": "https://github.com/joaopalmeiro/setasc",
