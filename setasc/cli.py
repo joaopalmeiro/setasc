@@ -16,17 +16,22 @@ from .utils import (
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, epilog="Let's sort!"[::-1], add_help=True
+    )
 
     parser._action_groups.pop()
-    required = parser.add_argument_group("Required arguments")
-    # optional = parser.add_argument_group("Optional arguments")
+    required = parser.add_argument_group("required arguments")
+    # optional = parser.add_argument_group("optional arguments")
 
     required.add_argument(
         "-i",
         "--input",
         required=True,
         help="The path to the `setup.py` file to be sorted.",
+        metavar="PATH",
+        type=str,
+        dest="input_path",
     )
 
     args = parser.parse_args()
@@ -57,12 +62,12 @@ def main():
     args = parse_args()
 
     try:
-        path = Path(args.input)
+        path = Path(args.input_path)
         data = path.read_text(encoding="utf-8")
     except FileNotFoundError:
-        print(f"🚫 File {repr(args.input)} not found.")
+        print(f"🚫 File {repr(args.input_path)} not found.")
     except IsADirectoryError:
-        print(f"🚫 {repr(args.input)} is a directory, not a file.")
+        print(f"🚫 {repr(args.input_path)} is a directory, not a file.")
     else:
         root = ast.parse(data)
         setup_call = SetupVisitor()
