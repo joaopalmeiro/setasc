@@ -40,6 +40,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Terminals",
         "Topic :: Utilities",
         "Typing :: Typed",
